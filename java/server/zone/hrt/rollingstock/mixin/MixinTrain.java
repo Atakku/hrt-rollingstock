@@ -7,7 +7,6 @@ import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.entity.TravellingPoint;
 import com.simibubi.create.content.trains.graph.TrackGraph;
-import com.simibubi.create.content.trains.track.BezierConnection;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.data.Pair;
