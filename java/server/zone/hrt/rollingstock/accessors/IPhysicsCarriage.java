@@ -1,8 +1,8 @@
-package zone.hrt.rollingstock.mixin;
+package zone.hrt.rollingstock.accessors;
 
 import org.jetbrains.annotations.Nullable;
 
-public interface AccessorIPhysicsCarriage {
+public interface IPhysicsCarriage {
   @Nullable
   Integer phys$getMass();
 

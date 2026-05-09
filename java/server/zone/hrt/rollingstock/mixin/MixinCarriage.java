@@ -15,11 +15,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import zone.hrt.rollingstock.RollingStock;
+import zone.hrt.rollingstock.accessors.IPhysicsCarriage;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Mixin(value = Carriage.class, remap = false)
-public abstract class MixinCarriage implements AccessorIPhysicsCarriage {
+public abstract class MixinCarriage implements IPhysicsCarriage {
   @Shadow
   public abstract CarriageContraptionEntity anyAvailableEntity();
 
@@ -44,7 +45,7 @@ public abstract class MixinCarriage implements AccessorIPhysicsCarriage {
   @Inject(method = "read", at = @At("RETURN"))
   private static void readMassAndEngineCount(CompoundTag tag, HolderLookup.Provider registries, TrackGraph graph,
       DimensionPalette dimensions, CallbackInfoReturnable<Carriage> cir) {
-    AccessorIPhysicsCarriage carriage = (AccessorIPhysicsCarriage) cir.getReturnValue();
+    IPhysicsCarriage carriage = (IPhysicsCarriage) cir.getReturnValue();
 
     if (tag.contains("mass", CompoundTag.TAG_INT))
       carriage.phys$setMass(tag.getInt("mass"));

@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import zone.hrt.rollingstock.RollingStock;
+import zone.hrt.rollingstock.accessors.IPhysicsCarriage;
 
 import java.util.List;
 import java.util.UUID;
@@ -181,7 +182,7 @@ public abstract class MixinTrain {
 
   @Unique
   private int phys$getCarriageMass(Carriage carriage) {
-    Integer carriageMass = ((AccessorIPhysicsCarriage) carriage).phys$getMass();
+    Integer carriageMass = ((IPhysicsCarriage) carriage).phys$getMass();
     if (carriageMass == null)
       carriageMass = 1;
     AtomicInteger cargoMass = new AtomicInteger();
@@ -203,7 +204,7 @@ public abstract class MixinTrain {
   @Unique
   private int phys$getCarriagePower(Carriage carriage) {
     // count the engines and sth
-    Integer engineCount = ((AccessorIPhysicsCarriage) carriage).trainphys$getEngineCount();
+    Integer engineCount = ((IPhysicsCarriage) carriage).trainphys$getEngineCount();
     if (engineCount == null)
       engineCount = 0;
     return engineCount * 200 * 1000;
