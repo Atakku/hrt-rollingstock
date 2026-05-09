@@ -80,7 +80,16 @@ public abstract class MixinTrain {
 
   @Inject(method = "acceleration", at = @At("HEAD"), cancellable = true)
   public void acceleration(CallbackInfoReturnable<Float> cir) {
-    cir.setReturnValue((float) phys$getAcceleration());
+    double velocity = Math.abs(speed * 20); // velocity in m/s
+    double force;
+    double maxPower = Math.abs(targetSpeed - speed) * phys$getMass() * (20 * 20);
+    if (Math.abs(targetSpeed) > Math.abs(speed) && !Mth.equal(targetSpeed * speed, 0)) {
+      force = Math.min(Math.min(phys$getPower() / velocity, phys$getMaxTractiveEffort()), maxPower);
+    } else {
+      force = Math.min(phys$getMaxTractiveEffort(), maxPower);
+    }
+    double acc = Math.max(phys$forceToAcceleration(force), 0.0001);
+    cir.setReturnValue((float) acc);
   }
 
   @Inject(method = "tickPassiveSlowdown", at = @At("HEAD"), cancellable = true)
@@ -93,23 +102,6 @@ public abstract class MixinTrain {
     double rollingFrictionAcceleration = -phys$forceToAcceleration(phys$getRollingFriction())
         * Math.signum(speed);
     speed += gravityAcceleration + aerodynamicAcceleration + rollingFrictionAcceleration;
-  }
-
-  @Inject(method = "approachTargetSpeed", at = @At("HEAD"), cancellable = true)
-  public void approachTargetSpeed(float accelerationMod, CallbackInfo ci) {
-    ci.cancel();
-
-    if (Mth.equal(targetSpeed, speed))
-      return;
-    if (manualTick)
-      leaveStation();
-    if (speed == targetSpeed)
-      return;
-    double acceleration = phys$getAcceleration();
-    if (speed < targetSpeed)
-      speed = Math.min(speed + acceleration, targetSpeed);
-    else if (speed > targetSpeed)
-      speed = Math.max(speed - acceleration, targetSpeed);
   }
 
   @WrapMethod(method = "collideWithOtherTrains")
@@ -179,19 +171,6 @@ public abstract class MixinTrain {
     // storageItems.(storage-> cargoMass.addAndGet((int) (storage.getAmount() *
     // 10)));
     return carriageMass * 500 + cargoMass.get();
-  }
-
-  @Unique
-  private double phys$getAcceleration() {
-    double velocity = Math.abs(speed * 20); // velocity in m/s
-    double force;
-    double maxPower = Math.abs(targetSpeed - speed) * phys$getMass() * (20 * 20);
-    if (Math.abs(targetSpeed) > Math.abs(speed) && targetSpeed * speed > 0) {
-      force = Math.min(Math.min(phys$getPower() / velocity, phys$getMaxTractiveEffort()), maxPower);
-    } else {
-      force = Math.min(phys$getMaxTractiveEffort(), maxPower);
-    }
-    return phys$forceToAcceleration(force);
   }
 
   @Unique
