@@ -79,8 +79,8 @@ public abstract class MixinTrain {
   }
 
   @Inject(method = "acceleration", at = @At("HEAD"), cancellable = true)
-  public void acceleration(CallbackInfoReturnable<Float> cir) {
-    cir.setReturnValue(0f); // Unused anyway
+  public void newAcceleration(CallbackInfoReturnable<Float> cir) {
+    cir.setReturnValue((float) phys$getAcceleration());
   }
 
   @Inject(method = "tickPassiveSlowdown", at = @At("HEAD"), cancellable = true)
@@ -109,15 +109,7 @@ public abstract class MixinTrain {
       leaveStation();
     if (speed == actualTarget)
       return;
-    double velocity = Math.abs(speed * 20); // velocity in m/s
-    double force;
-    double maxPower = Math.abs(actualTarget - speed) * phys$getMass() * (20 * 20);
-    if (Math.abs(targetSpeed) > Math.abs(speed) && targetSpeed * speed > 0) {
-      force = Math.min(Math.min(phys$getPower() / velocity, phys$getMaxTractiveEffort()), maxPower);
-    } else {
-      force = Math.min(phys$getMaxTractiveEffort(), maxPower);
-    }
-    double acceleration = phys$forceToAcceleration(force);
+    double acceleration = phys$getAcceleration();
     if (speed < actualTarget)
       speed = Math.min(speed + acceleration, actualTarget);
     else if (speed > actualTarget)
@@ -191,6 +183,19 @@ public abstract class MixinTrain {
     // storageItems.(storage-> cargoMass.addAndGet((int) (storage.getAmount() *
     // 10)));
     return carriageMass * 500 + cargoMass.get();
+  }
+
+  @Unique
+  private double phys$getAcceleration() {
+    double velocity = Math.abs(speed * 20);
+    double force;
+    double maxPower = Math.abs(RollingStock.MAX_SPEED - speed) * phys$getMass() * (20 * 20);
+    if (Math.abs(targetSpeed) > Math.abs(speed) && targetSpeed * speed > 0) {
+      force = Math.min(Math.min(phys$getPower() / velocity, phys$getMaxTractiveEffort()), maxPower);
+    } else {
+      force = Math.min(phys$getMaxTractiveEffort(), maxPower);
+    }
+    return phys$forceToAcceleration(force);
   }
 
   @Unique
