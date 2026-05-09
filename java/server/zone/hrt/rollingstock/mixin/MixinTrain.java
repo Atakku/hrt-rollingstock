@@ -82,12 +82,6 @@ public abstract class MixinTrain {
         // : 0.4;
     }
 
-    @Unique
-    private double railways$powerUsage = 0;
-    // @Unique private boolean railways$isRaining = false;
-    @Unique
-    private double railways$energyUsed = 0;
-
     @WrapMethod(method = "collideWithOtherTrains")
     public void collideWithOtherTrains(Level level, Carriage carriage, Operation<Void> original) {
         if (derailed)
@@ -191,7 +185,7 @@ public abstract class MixinTrain {
         Integer engineCount = ((AccessorIPhysicsCarriage) carriage).trainphys$getEngineCount();
         if (engineCount == null)
             engineCount = 0;
-        return engineCount * 250 * 1000;
+        return engineCount * 1000;
     }
 
     @Unique
@@ -254,13 +248,6 @@ public abstract class MixinTrain {
 
     }
 
-    // @Inject(method = "acceleration", at = @At("HEAD"), cancellable = true)
-    // public void acceleration(CallbackInfoReturnable<Float> cir) {
-    // if (Config.requireFuel && fuelTicks <= 0)
-    // cir.setReturnValue(AllConfigs.server().trains.trainAcceleration.getF() / (400
-    // * 20));
-    // }
-
     @Inject(method = "approachTargetSpeed", at = @At("HEAD"), cancellable = true)
     public void approachTargetSpeed(float accelerationMod, CallbackInfo ci) {
         ci.cancel();
@@ -278,10 +265,8 @@ public abstract class MixinTrain {
         if (fuelTicks > 0) {
             if (Math.abs(targetSpeed) > Math.abs(speed) && targetSpeed * speed > 0) {
                 force = Math.min(Math.min(railways$getPower() / velocity, railways$getMaxTractiveEffort()), maxPower);
-                railways$powerUsage = force * velocity;
             } else {
                 force = Math.min(railways$getMaxTractiveEffort(), maxPower);
-                railways$powerUsage = 0;
             }
         }
         double acceleration = railways$forceToAcceleration(force);
@@ -326,42 +311,10 @@ public abstract class MixinTrain {
         return (railways$rollingResistanceCoefficient() * (railways$getMass() * 9.81));
     }
 
-    // @Unique private void railways$applyWheelSlip(CarriageBogey bogey, double
-    // distance){
-    // CRPackets.PACKETS.sendTo(PlayerSelection.all(), new WheelslipPacket(bogey,
-    // distance));
-    // }
-
     @Unique
     double railways$forceToAcceleration(double force) {
         return force / railways$getMass() / (20 * 20);
     }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    public void tick(CallbackInfo ci) {
-        railways$energyUsed += railways$powerUsage / 20;
-        // double vmax = maxTurnSpeed();
-        // carriages.forEach(c->c.forEachPresentEntity(cce->cce.getPassengers().forEach(p->{
-        // if(!(p instanceof Player player)) return;
-        // player.displayClientMessage(Component.literal(String.format("%.0fW P -
-        // %.0fb/s v - %.0fb/s vmax - %dkg mass - %d fticks",
-        // railways$powerUsage, speed*20, vmax*20, railways$getMass(), fuelTicks)),
-        // true);
-        // })));
-    }
-
-    // perhaps let the other mods do their own fuel burn calc
-    //@Inject(method = "burnFuel", at = @At("HEAD"), cancellable = true)
-    //public void burnFuel(CallbackInfo ci) {
-    //    if (fuelTicks <= 0)
-    //        return;
-    //    int joulesPerTick = 15000; // rough estimate based on coal
-    //    int ticks = (int) railways$energyUsed / joulesPerTick;
-    //    railways$energyUsed %= joulesPerTick;
-
-    //    fuelTicks -= ticks;
-    //    ci.cancel();
-    //}
 
     @Unique
     public double railways$getCarriageYaw(Carriage carriage) {
