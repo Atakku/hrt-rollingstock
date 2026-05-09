@@ -21,9 +21,9 @@ public class RollingStock {
   public static final double FRICTION = 0.4; // frictionCoefficient
   public static final double RESISTANCE = 0.001; // rollingResistanceCoefficient
 
-  public static final float MAX_SPEED = 360 / 72f; // 360 km/h / 3.6 = 100 m/s / 20t = 5 m/t
+  public static final int MIN_POWER = 200; // 200w, manually cranking the train along
 
   public static final TagKey<Block> TAG_ENGINE = TagKey.create(
       Registries.BLOCK,
-      ResourceLocation.fromNamespaceAndPath(MOD_ID, "train_engine"));
+      ResourceLocation.fromNamespaceAndPath("electroenergetics", "train_electric_motor"));
 }

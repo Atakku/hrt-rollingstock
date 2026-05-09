@@ -70,16 +70,16 @@ public abstract class MixinTrain {
 
   @Inject(method = "maxSpeed", at = @At("HEAD"), cancellable = true)
   public void maxSpeed(CallbackInfoReturnable<Float> cir) {
-    cir.setReturnValue(RollingStock.MAX_SPEED);
+    cir.setReturnValue(AllConfigs.server().trains.trainTopSpeed.getF() / 20);
   }
 
   @Inject(method = "maxTurnSpeed", at = @At("HEAD"), cancellable = true)
   public void maxTurnSpeed(CallbackInfoReturnable<Float> cir) {
-    cir.setReturnValue(RollingStock.MAX_SPEED);
+    cir.setReturnValue(AllConfigs.server().trains.trainTopSpeed.getF() / 20);
   }
 
   @Inject(method = "acceleration", at = @At("HEAD"), cancellable = true)
-  public void newAcceleration(CallbackInfoReturnable<Float> cir) {
+  public void acceleration(CallbackInfoReturnable<Float> cir) {
     cir.setReturnValue((float) phys$getAcceleration());
   }
 
@@ -90,30 +90,26 @@ public abstract class MixinTrain {
       return;
     double gravityAcceleration = phys$getGravityAcceleration();
     double aerodynamicAcceleration = -phys$forceToAcceleration(phys$getAerodynamicDrag());
-    double rollingFrictionAcceleration = -phys$forceToAcceleration(phys$getRollingFriction()) * Math.signum(speed);
-
+    double rollingFrictionAcceleration = -phys$forceToAcceleration(phys$getRollingFriction())
+        * Math.signum(speed);
     speed += gravityAcceleration + aerodynamicAcceleration + rollingFrictionAcceleration;
-    // carriages.forEach(carriage ->
-    // carriage.bogeys.stream().filter(Objects::nonNull).forEach(carriageBogey ->
-    // phys$applyWheelSlip(carriageBogey,.1)));
   }
 
   @Inject(method = "approachTargetSpeed", at = @At("HEAD"), cancellable = true)
   public void approachTargetSpeed(float accelerationMod, CallbackInfo ci) {
     ci.cancel();
 
-    double actualTarget = targetSpeed;
-    if (Mth.equal(actualTarget, speed))
+    if (Mth.equal(targetSpeed, speed))
       return;
     if (manualTick)
       leaveStation();
-    if (speed == actualTarget)
+    if (speed == targetSpeed)
       return;
     double acceleration = phys$getAcceleration();
-    if (speed < actualTarget)
-      speed = Math.min(speed + acceleration, actualTarget);
-    else if (speed > actualTarget)
-      speed = Math.max(speed - acceleration, actualTarget);
+    if (speed < targetSpeed)
+      speed = Math.min(speed + acceleration, targetSpeed);
+    else if (speed > targetSpeed)
+      speed = Math.max(speed - acceleration, targetSpeed);
   }
 
   @WrapMethod(method = "collideWithOtherTrains")
@@ -187,9 +183,9 @@ public abstract class MixinTrain {
 
   @Unique
   private double phys$getAcceleration() {
-    double velocity = Math.abs(speed * 20);
+    double velocity = Math.abs(speed * 20); // velocity in m/s
     double force;
-    double maxPower = Math.abs(RollingStock.MAX_SPEED - speed) * phys$getMass() * (20 * 20);
+    double maxPower = Math.abs(targetSpeed - speed) * phys$getMass() * (20 * 20);
     if (Math.abs(targetSpeed) > Math.abs(speed) && targetSpeed * speed > 0) {
       force = Math.min(Math.min(phys$getPower() / velocity, phys$getMaxTractiveEffort()), maxPower);
     } else {
@@ -218,8 +214,8 @@ public abstract class MixinTrain {
   @Unique
   private int phys$getPower() {
     if (fuelTicks <= 0)
-      return 200; // Average sustained bycicle power
-    return Math.max(carriages.stream().mapToInt(this::phys$getCarriagePower).sum(), 200);
+      return RollingStock.MIN_POWER;
+    return Math.max(carriages.stream().mapToInt(this::phys$getCarriagePower).sum(), RollingStock.MIN_POWER);
   }
 
   /**
@@ -229,18 +225,9 @@ public abstract class MixinTrain {
    */
   @Unique
   private double phys$getMaxTractiveEffort() {
-    double friction = RollingStock.FRICTION;
-    return carriages.stream().mapToDouble(carriage -> friction * phys$getCarriageMass(carriage) * 9.81).sum();
+    return carriages.stream().mapToDouble(carriage -> RollingStock.FRICTION * phys$getCarriageMass(carriage) * 9.81).sum();
   }
 
-  //@Unique
-  //private double phys$getMaxSpeed() {
-  //  double p = phys$getMass() * RollingStock.RESISTANCE / phys$getDragConstant();
-  //  double q = -phys$getPower() / phys$getDragConstant();
-  //  double D = q * q + Math.pow(p * 2 / 3, 3);
-  //  double DRoot = Math.sqrt(D);
-  //  return Math.min(Math.cbrt(-q + DRoot) + Math.cbrt(-q - DRoot), RollingStock.MAX_SPEED);
-  //}
 
   @Unique
   private double phys$getGravityAcceleration() {
@@ -248,11 +235,10 @@ public abstract class MixinTrain {
       return 0;
     Vec3 leading = carriages.getFirst().getLeadingPoint().getPosition(graph);
     Vec3 trailing = carriages.getLast().getTrailingPoint().getPosition(graph);
-    double horizontalDistance = Math
-        .sqrt(Math.pow(leading.x - trailing.x, 2) + Math.pow(leading.z - trailing.z, 2));
+    double horizontalDistance = Math.sqrt(Math.pow(leading.x - trailing.x, 2) + Math.pow(leading.z - trailing.z, 2));
     double verticalDistance = leading.y - trailing.y;
-    double incline = Math.atan2(verticalDistance, horizontalDistance); // (-0.5pi,0): decline, (0, 0.5pi): incline
-                                                                       // 0: no incline
+    double incline = Math.atan2(verticalDistance, horizontalDistance); // (-0.5pi,0): decline, (0, 0.5pi): incline 0: no
+                                                                       // incline
     double gravityPerTick = -9.81 / (20 * 20); // 1s = 20t
     double gravityMultiplier = 1;
     return gravityMultiplier * gravityPerTick * Math.sin(incline);
