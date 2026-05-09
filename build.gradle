@@ -1,0 +1,18 @@
+// Copyright 2026 Atakku <https://atakku.dev>
+//
+// This project is dual licensed under MIT and Apache.
+
+apply from: 'https://raw.githubusercontent.com/Atakku/gradle/v51/neoforge_build.gradle'
+
+project(':server').repositories {
+  maven { url = "https://maven.createmod.net" }
+  maven { url = "https://maven.ithundxr.dev/snapshots" }
+}
+
+project(':server').dependencies {
+  implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+  implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
+  compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
+  runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
+  implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+}

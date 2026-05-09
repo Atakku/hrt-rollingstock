@@ -1,0 +1,16 @@
+{
+  "editor.tabSize": 2,
+  "files.exclude": {
+    ".gradle/": true,
+    "bin/": true,
+    "build/classes/": true,
+    "build/devlibs/": true,
+    "build/generated/": true,
+    "build/loom-cache/": true,
+    "build/resources/": true,
+    "build/tmp/": true,
+    "gradle/": true,
+    "gradlew*": true,
+  },
+  "java.compile.nullAnalysis.mode": "disabled",
+}

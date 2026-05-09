@@ -1,0 +1,7 @@
+// Copyright 2026 Atakku <https://atakku.dev>
+//
+// This project is dual licensed under MIT and Apache.
+
+ext.targets = ['server': []]
+
+apply from: 'https://raw.githubusercontent.com/Atakku/gradle/v51/common_settings.gradle'
