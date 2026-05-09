@@ -273,16 +273,16 @@ public abstract class MixinTrain {
         if (speed == actualTarget)
             return;
         double velocity = Math.abs(speed * 20); // velocity in m/s
-        double force;
+        double force = 0;
         double maxPower = Math.abs(actualTarget - speed) * railways$getMass() * (20 * 20);
-        if (fuelTicks <= 0)
-            maxPower /= 20;
-        if (Math.abs(targetSpeed) > Math.abs(speed) && targetSpeed * speed > 0) {
-            force = Math.min(Math.min(railways$getPower() / velocity, railways$getMaxTractiveEffort()), maxPower);
-            railways$powerUsage = force * velocity;
-        } else {
-            force = Math.min(railways$getMaxTractiveEffort(), maxPower);
-            railways$powerUsage = 0;
+        if (fuelTicks > 0) {
+            if (Math.abs(targetSpeed) > Math.abs(speed) && targetSpeed * speed > 0) {
+                force = Math.min(Math.min(railways$getPower() / velocity, railways$getMaxTractiveEffort()), maxPower);
+                railways$powerUsage = force * velocity;
+            } else {
+                force = Math.min(railways$getMaxTractiveEffort(), maxPower);
+                railways$powerUsage = 0;
+            }
         }
         double acceleration = railways$forceToAcceleration(force);
         if (speed < actualTarget)
@@ -350,17 +350,18 @@ public abstract class MixinTrain {
         // })));
     }
 
-    @Inject(method = "burnFuel", at = @At("HEAD"), cancellable = true)
-    public void burnFuel(CallbackInfo ci) {
-        if (fuelTicks <= 0)
-            return;
-        int joulesPerTick = 15000; // rough estimate based on coal
-        int ticks = (int) railways$energyUsed / joulesPerTick;
-        railways$energyUsed %= joulesPerTick;
+    // perhaps let the other mods do their own fuel burn calc
+    //@Inject(method = "burnFuel", at = @At("HEAD"), cancellable = true)
+    //public void burnFuel(CallbackInfo ci) {
+    //    if (fuelTicks <= 0)
+    //        return;
+    //    int joulesPerTick = 15000; // rough estimate based on coal
+    //    int ticks = (int) railways$energyUsed / joulesPerTick;
+    //    railways$energyUsed %= joulesPerTick;
 
-        fuelTicks -= ticks;
-        ci.cancel();
-    }
+    //    fuelTicks -= ticks;
+    //    ci.cancel();
+    //}
 
     @Unique
     public double railways$getCarriageYaw(Carriage carriage) {
