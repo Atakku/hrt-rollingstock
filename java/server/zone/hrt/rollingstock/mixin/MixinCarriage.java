@@ -57,7 +57,6 @@ public abstract class MixinCarriage implements IPhysicsCarriage {
 
   @Override
   public @Nullable Double phys$getMass() {
-    System.out.println("MASS " + phys$mass);
     if (phys$mass == null || phys$mass == 0) {
       CarriageContraptionEntity entity = anyAvailableEntity();
       if (entity != null)
