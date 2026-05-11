@@ -4,6 +4,9 @@ import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.content.trains.graph.DimensionPalette;
 import com.simibubi.create.content.trains.graph.TrackGraph;
+import dev.ryanhcode.sable.mixinterface.block_properties.BlockStateExtension;
+import dev.ryanhcode.sable.physics.config.block_properties.PhysicsBlockPropertyTypes;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +27,7 @@ public abstract class MixinCarriage implements IPhysicsCarriage {
   public abstract CarriageContraptionEntity anyAvailableEntity();
 
   @Unique
-  private @Nullable Integer phys$mass = null;
+  private @Nullable Double phys$mass = null;
   @Unique
 
   private @Nullable Integer trainphys$engineCount = null;
@@ -33,9 +36,9 @@ public abstract class MixinCarriage implements IPhysicsCarriage {
   private void writeMassAndEngineCount(DimensionPalette dimensions, HolderLookup.Provider registries,
       CallbackInfoReturnable<CompoundTag> cir) {
     CompoundTag tag = cir.getReturnValue();
-    Integer mass = phys$getMass();
+    Double mass = phys$getMass();
     if (mass != null)
-      tag.putInt("mass", mass);
+      tag.putDouble("mass", mass);
     Integer engineCount = trainphys$getEngineCount();
     if (engineCount != null)
       tag.putInt("engineCount", engineCount);
@@ -46,24 +49,27 @@ public abstract class MixinCarriage implements IPhysicsCarriage {
       DimensionPalette dimensions, CallbackInfoReturnable<Carriage> cir) {
     IPhysicsCarriage carriage = (IPhysicsCarriage) cir.getReturnValue();
 
-    if (tag.contains("mass", CompoundTag.TAG_INT))
-      carriage.phys$setMass(tag.getInt("mass"));
+    if (tag.contains("mass", CompoundTag.TAG_DOUBLE))
+      carriage.phys$setMass(tag.getDouble("mass"));
     if (tag.contains("engineCount", CompoundTag.TAG_INT))
       carriage.trainphys$setEngineCount(tag.getInt("engineCount"));
   }
 
   @Override
-  public @Nullable Integer phys$getMass() {
+  public @Nullable Double phys$getMass() {
+    System.out.println("MASS " + phys$mass);
     if (phys$mass == null || phys$mass == 0) {
       CarriageContraptionEntity entity = anyAvailableEntity();
       if (entity != null)
-        phys$mass = entity.getContraption().getBlocks().size();
+        phys$mass = entity.getContraption().getBlocks().values().stream()
+            .mapToDouble(a -> ((BlockStateExtension) a.state()).sable$getProperty(PhysicsBlockPropertyTypes.MASS.get()))
+            .sum();
     }
     return phys$mass;
   }
 
   @Override
-  public void phys$setMass(int mass) {
+  public void phys$setMass(double mass) {
     phys$mass = mass;
   }
 

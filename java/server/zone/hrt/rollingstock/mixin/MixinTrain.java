@@ -28,7 +28,6 @@ import zone.hrt.rollingstock.accessors.IPhysicsCarriage;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Mixin(value = Train.class, remap = false)
 public abstract class MixinTrain {
@@ -143,8 +142,8 @@ public abstract class MixinTrain {
       return;
     }
 
-    int m1 = phys$getMass();
-    int m2 = train.carriages.stream().mapToInt(this::phys$getCarriageMass).sum();
+    double m1 = phys$getMass();
+    double m2 = train.carriages.stream().mapToDouble(this::phys$getCarriageMass).sum();
 
     double u1 = directionMultiplier * speed * 20;
     double u2 = train.speed * 20;
@@ -161,21 +160,21 @@ public abstract class MixinTrain {
   }
 
   @Unique
-  private int phys$getCarriageMass(Carriage carriage) {
-    Integer carriageMass = ((IPhysicsCarriage) carriage).phys$getMass();
+  private double phys$getCarriageMass(Carriage carriage) {
+    Double carriageMass = ((IPhysicsCarriage) carriage).phys$getMass();
     if (carriageMass == null)
-      carriageMass = 1;
-    AtomicInteger cargoMass = new AtomicInteger();
+      carriageMass = 1.0;
+    //AtomicInteger cargoMass = new AtomicInteger();
     // CombinedInvWrapper storageItems = carriage.storage.getAllItems();
     // if(storageItems != null)
     // storageItems.(storage-> cargoMass.addAndGet((int) (storage.getAmount() *
     // 10)));
-    return carriageMass * 500 + cargoMass.get();
+    return carriageMass * 500;// cargoMass.get();
   }
 
   @Unique
-  private int phys$getMass() {
-    int mass = 0;
+  private double phys$getMass() {
+    double mass = 0;
     for (Carriage carriage : carriages)
       mass += phys$getCarriageMass(carriage);
     return mass;

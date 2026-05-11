@@ -7,6 +7,23 @@ apply from: 'https://raw.githubusercontent.com/Atakku/gradle/v51/neoforge_build.
 project(':server').repositories {
   maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
   maven { url = "https://mvn.devos.one/snapshots" } // Registrate
+
+  exclusiveContent { // Sable
+    forRepository {
+      maven {
+        url = "https://maven.ryanhcode.dev/releases"
+        name = "RyanHCode Maven"
+      }
+    }
+    filter {
+      includeGroup("dev.ryanhcode.sable")
+      includeGroup("dev.ryanhcode.sable-companion")
+    }
+  }
+  maven {
+    name = 'BlameJared Maven (CrT / Bookshelf)'
+    url = 'https://maven.blamejared.com'
+  }
 }
 
 project(':server').dependencies {
@@ -15,4 +32,13 @@ project(':server').dependencies {
   compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
   runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
   implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+
+  implementation("foundry.veil:veil-neoforge-${minecraft_version}:${veil_version}") {
+    exclude group: "maven.modrinth"
+  }
+  compileOnly("dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}")
+  api ("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}") {
+    exclude group: "foundry.veil"
+    exclude group: "com.tterrag.registrate"
+  }
 }

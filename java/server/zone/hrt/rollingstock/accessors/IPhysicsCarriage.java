@@ -4,9 +4,9 @@ import org.jetbrains.annotations.Nullable;
 
 public interface IPhysicsCarriage {
   @Nullable
-  Integer phys$getMass();
+  Double phys$getMass();
 
-  void phys$setMass(int mass);
+  void phys$setMass(double mass);
 
   @Nullable
   Integer trainphys$getEngineCount();
